@@ -1,0 +1,360 @@
+# Dillon Tate
+# CS 463G
+# Pyraminx Part 1
+# This project attempts to randomize a pyraminx. I have created a seperate function
+# for each possible movement. The algorithm to randomize starts at the solved state
+# and randomly chooses a number of moves to make, choosing from each of 12 possible
+# moves and then choosing one of the two possible directions for that move.
+
+import random
+
+# Example Print of Solved State
+# def print_solved():
+#    print("      y             b             r")
+#    print("    y y y         b b b         r r r")
+#    print("  y y y y y     b b b b b     r r r r r")
+#    print("y y y y y y y b b b b b b b r r r r r r r")
+#    print("              g g g g g g g")
+#    print("                g g g g g")
+#    print("                  g g g")
+#    print("                    g")
+
+
+# Mapping it out by faces (16 each side)
+# Pyraminx unfolded (messy, this is just for personal reference)
+#          a             a             a
+#        b c d         d b c         c d b
+#      e f g h i     i h g e f     f h g i e
+#    j k l m n o p p k j l n o m m k l n p o j
+#                  p 1 2 3 4 5 m
+#                    7 8 9 a b
+#                      c d e
+#                        j
+# For printing and calculation purposes
+#          0             0             0
+#        1 2 3         1 2 3         1 2 3
+#      4 5 6 7 8     4 5 6 7 8     4 5 6 7 8
+#    9 a b c d e f 9 a b c d e f 9 a b c d e f
+#                  0 1 2 3 4 5 6
+#                    7 8 9 a b
+#                      c d e
+#                        f
+
+face1 = ["y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y", "y"]
+face2 = ["r", "r", "r", "r", "r", "r", "r", "r", "r", "r", "r", "r", "r", "r", "r", "r"]
+face3 = ["b", "b", "b", "b", "b", "b", "b", "b", "b", "b", "b", "b", "b", "b", "b", "b"]
+face4 = ["g", "g", "g", "g", "g", "g", "g", "g", "g", "g", "g", "g", "g", "g", "g", "g"]
+
+
+def print_current():
+    for i in range(0, 4):
+        for k in range(0, 3):
+            print_single_row(k, i)
+        print("\r")
+    for i in range(3, -1, -1):
+        if i == 0:
+            count = 15
+        elif i == 1:
+            count = 12
+        elif i == 2:
+            count = 7
+        elif i == 3:
+            count = 0
+        for n in range(0, 10-i):
+            print(" ", end="")
+        for j in range(0, i*2+1):
+            count = count + 1
+            print(face4[count-1], end="")
+        for n in range(0, 3 - i):
+            print(" ", end="")
+        print("\r")
+
+
+def print_single_row(k, i):
+    if i == 0:
+        count = 0
+    elif i == 1:
+        count = 1
+    elif i == 2:
+        count = 4
+    elif i == 3:
+        count = 9
+    all_faces = [face1, face2, face3, face4]
+    for n in range(0, 3 - i):
+        print(" ", end="")
+    for j in range(0, i * 2 + 1):
+        count = count + 1
+        print(all_faces[k][count-1], end="")
+    for n in range(0, 3 - i):
+        print(" ", end="")
+
+
+# Defining turn functions, all go left to right turns
+
+
+def turn_corner_a():
+    # Turning by corner a
+    face = face1[0]
+    face1[0] = face2[0]
+    face2[0] = face3[0]
+    face3[0] = face
+
+
+def turn_double_a():
+    # Turning the 2 layers with corner a
+    turn_corner_a()
+    for i in range(1, 4):
+        face = face1[i]
+        face1[i] = face2[i]
+        face2[i] = face3[i]
+        face3[i] = face
+
+
+def turn_triple_a():
+    # Turning the 3 layers with corner a
+    turn_corner_a()
+    for i in range(1, 9):
+        face = face1[i]
+        face1[i] = face2[i]
+        face2[i] = face3[i]
+        face3[i] = face
+
+
+def turn_corner_j():
+    # Turning by corner j right (1 to 3)
+    face = face1[9]
+    face1[9] = face3[15]
+    face3[15] = face4[15]
+    face4[15] = face
+
+
+def turn_double_j():
+    # Turning the 2 layers with corner j right (1 to 3)
+    turn_corner_j()
+    # 1-4 to 3-d to 4-c
+    face = face1[4]
+    face1[4] = face3[13]
+    face3[13] = face4[12]
+    face4[12] = face
+    # 1-b to 3-8 to 4-e
+    face = face1[11]
+    face1[11] = face3[8]
+    face3[8] = face4[14]
+    face4[14] = face
+    # 1-a to 3-e to 4-d
+    face = face1[10]
+    face1[10] = face3[14]
+    face3[14] = face4[13]
+    face4[13] = face
+
+
+def turn_triple_j():
+    # Turning the 2 layers with corner j right (1 to 3)
+    # NOT DONE
+    turn_double_j()
+    # 1-1 to 3-b to 4-7
+    face = face1[1]
+    face1[1] = face3[11]
+    face3[11] = face4[7]
+    face4[7] = face
+    # 1-6 to 3-6 to 4-9
+    face = face1[6]
+    face1[6] = face3[6]
+    face3[6] = face4[9]
+    face4[9] = face
+    # 1-d to 3-3 to 4-b
+    face = face1[13]
+    face1[13] = face3[3]
+    face3[3] = face4[11]
+    face4[11] = face
+    # 1-5 to 3-c to 4-8
+    face = face1[5]
+    face1[5] = face3[12]
+    face3[12] = face4[8]
+    face4[8] = face
+    # 1-c to 3-7 to 4-a
+    face = face1[12]
+    face1[12] = face3[7]
+    face3[7] = face4[10]
+    face4[10] = face
+
+
+def turn_corner_p():
+    # Turning by corner p
+    face = face1[15]
+    face1[15] = face2[9]
+    face2[9] = face4[0]
+    face4[0] = face
+
+
+def turn_double_p():
+    # Turning by corner p (f90) upwards
+    turn_corner_p()
+    # 1-e 2-a 4-1
+    face = face1[14]
+    face1[14] = face2[10]
+    face2[10] = face4[1]
+    face4[1] = face
+    # 1-d 2-4 4-2
+    face = face1[13]
+    face1[13] = face2[4]
+    face2[4] = face4[2]
+    face4[2] = face
+    # 1-8 2-b 4-7
+    face = face1[8]
+    face1[8] = face2[11]
+    face2[11] = face4[7]
+    face4[7] = face
+
+
+def turn_triple_p():
+    # Turning by corner p (f90) upwards
+    turn_double_p()
+    # 1-3 2-d 4-c
+    face = face1[3]
+    face1[3] = face2[13]
+    face2[13] = face4[12]
+    face4[12] = face
+    # 1-6 2-6 4-9
+    face = face1[6]
+    face1[6] = face2[6]
+    face2[6] = face4[9]
+    face4[9] = face
+    # 1-b 2-1 4-4
+    face = face1[11]
+    face1[11] = face2[1]
+    face2[1] = face4[4]
+    face4[4] = face
+    # 1-7 2-c 4-8
+    face = face1[7]
+    face1[7] = face2[12]
+    face2[12] = face4[8]
+    face4[8] = face
+    # 1-c 2-5 4-3
+    face = face1[12]
+    face1[12] = face2[5]
+    face2[5] = face4[3]
+    face4[3] = face
+
+
+def turn_corner_m():
+    # Turning by corner m
+    face = face2[15]
+    face2[15] = face4[6]
+    face4[6] = face3[9]
+    face3[9] = face
+
+
+def turn_double_m():
+    # Turning the 2 layers with corner m upwards
+    turn_corner_m()
+    # 4-4,2-8,3,b
+    face = face2[8]
+    face2[8] = face4[4]
+    face4[4] = face3[11]
+    face3[11] = face
+    # 4-5,2-e,3-a
+    face = face2[14]
+    face2[14] = face4[5]
+    face4[5] = face3[10]
+    face3[10] = face
+    # 4-b,2-d,3-4
+    face = face2[13]
+    face2[13] = face4[11]
+    face4[11] = face3[4]
+    face3[4] = face
+
+
+def turn_triple_m():
+    # Turning the 3 layers with corner m upwards
+    turn_double_m()
+    # 4-e 2-b 3-1
+    face = face2[11]
+    face2[11] = face4[14]
+    face4[14] = face3[1]
+    face3[1] = face
+    # 4-9 2-6 3-6
+    face = face2[6]
+    face2[6] = face4[9]
+    face4[9] = face3[6]
+    face3[6] = face
+    # 4-2 2-3 3-d
+    face = face2[3]
+    face2[3] = face4[2]
+    face4[2] = face3[14]
+    face3[14] = face
+    # 4-a 2-c 3-5
+    face = face2[12]
+    face2[12] = face4[10]
+    face4[10] = face3[5]
+    face3[5] = face
+    # 4-3 2-7 3-c
+    face = face2[7]
+    face2[7] = face4[3]
+    face4[3] = face3[12]
+    face3[12] = face
+
+
+def switch(r_num):
+    # This code was modified based on the following source:
+    # Author: Sreeram Sceenivasan
+    # Date Read: 8/31/2020
+    # Date Posted: October 24, 2017
+    # Title: How to implement a switch-case statement in Python
+    # URL: https://jaxenter.com/implement-switch-case-statement-python-138315.html
+
+    # Switch statement based on random input.
+    # If between 12 and 23, it is a turn in the opposite direction
+    if r_num > 11:
+        r_num = r_num - 12
+        switch(r_num)
+    if r_num == 0:
+        turn_corner_p()
+    elif r_num == 1:
+        turn_double_p()
+    elif r_num == 2:
+        turn_triple_p()
+    elif r_num == 3:
+        turn_corner_a()
+    elif r_num == 4:
+        turn_double_a()
+    elif r_num == 5:
+        turn_triple_a()
+    elif r_num == 6:
+        turn_corner_j()
+    elif r_num == 7:
+        turn_double_j()
+    elif r_num == 8:
+        turn_triple_j()
+    elif r_num ==9:
+        turn_corner_m()
+    elif r_num == 10:
+        turn_double_m()
+    elif r_num == 11:
+        turn_triple_m()
+
+
+def randomize(moves):
+    # Make between 0 and 30 moves
+    for i in range(0, moves):
+        # The following section of code was modified from
+        # Author: Jason Brownlee
+        # Date Read: 8/31/2020
+        # Date Posted: July 4, 2018
+        # Title: How to Generate Random Numbers in Python
+        # https://machinelearningmastery.com/how-to-generate-random-numbers-in-python/
+
+        # generate random integer values
+        # seed random number generator
+        random.seed()
+        value = random.randrange(0, 23, 1)
+        switch(value)
+
+
+# Actual Call to Randomize Pyraminx by a number of moves. To be more random
+# and prevent it from being trivial, it should likely be set more than 5 moves
+# For this example is it set to make between 5 and 30 pseudo-random moves and
+# then print the current state of the pyraminx
+random.seed()
+randomize(random.randrange(5, 30, 1))
+print_current()
